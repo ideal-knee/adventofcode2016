@@ -18,14 +18,30 @@
       (str prefix (apply str (repeat n to-repeat)) (decompress suffix)) )
     s ) )
 
+(declare decompress-v2-count)
+
+(defn decompress-with-suffix [body suffix]
+  (let [result (decompress-v2-count body)]
+    (if (< result 0)
+      (let [n-needed (Math/abs result)]
+        (if (< (count suffix) n-needed)
+          [(- (count suffix) n-needed)]
+          (recur (str body (subs suffix 0 n-needed)) (subs suffix n-needed)) ))
+      [result suffix] ) ) )
+
 (def decompress-v2-count
   (memoize (fn [s]
              (if-let [[prefix len n rest] (parse s)]
-               (let [to-repeat (subs rest 0 len)
-                     suffix (subs rest len) ]
-                 (+ (count prefix)
-                    (decompress-v2-count (apply str (repeat n to-repeat)))
-                    (decompress-v2-count suffix) ) )
+               (if (< (count rest) len)
+                 (- (count rest) len)
+                 (let [body (apply str (repeat n (subs rest 0 len)))
+                       initial-suffix (subs rest len)
+                       [body-decompress-count suffix] (decompress-with-suffix body initial-suffix) ]
+                   (if (< body-decompress-count 0)
+                     body-decompress-count
+                     (+ (count prefix)
+                        body-decompress-count
+                        (decompress-v2-count suffix) ) ) ) )
                (count s) ) )) )
 
  (defn -main []
