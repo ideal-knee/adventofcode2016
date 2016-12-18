@@ -14,25 +14,34 @@
 (defn invert [s]
   (map #(- 1 %) s) )
 
-(defn unfold [s n]
-  (let [unfolded-s (reduce into [] [s [0] (invert (reverse s))])]
-    (if (< (count unfolded-s) n)
-      (recur unfolded-s n)
-      (take n unfolded-s) ) ) )
+(defnp unfold [n s]
+  (let [v (transient (vec s))]
+    (while (< (count v) n)
+      (let [n-to-rotate (count v)]
+        (conj! v 0)
+        (reduce #(if (= (count %) n)
+                   (reduced %)
+                   (conj! % (- 1 (get % (- (dec n-to-rotate) %2)))) )
+                v
+                (range n-to-rotate) ) ) )
+    (persistent! v) ) )
 
-(defn checksum [s]
-  (if (odd? (count s))
+(defn checksum [n s]
+  (if (odd? n)
     s
     (->> s
          (partition 2)
          (map #(if (= (reduce + %) 1) 0 1))
-         checksum ) ) )
+         (recur (/ n 2)) ) ) )
+
+(def part-1-disk-size 272)
+(def part-2-disk-size 35651584)
+(def disk-size part-2-disk-size)
 
 (defn -main []
-  (time (-> "10001110011110000"
-            str->bits
-            #_(unfold 272) ; Part 1
-            (unfold 35651584) ; Part 2
-            checksum
-            str/join
-            println )) )
+  (time (->> "10001110011110000"
+             str->bits
+             (unfold disk-size)
+             (checksum disk-size)
+             str/join
+             println )) )
