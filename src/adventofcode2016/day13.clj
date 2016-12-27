@@ -45,7 +45,7 @@
   (let [queued-nodes (into #{} (map #(-> % second :position) values))]
     (->> (range display-max-y)
          (map (fn [y]
-                (<-> (range display-max-x)
+                (->> (range display-max-x)
                      (map (fn [x]
                             (let [p {:x x :y y}]
                               (cond (= p end-position) "XX"
@@ -59,7 +59,8 @@
          (println) ) ) )
 
 (defn a-star [{:keys [priority-queue visited-positions magic-number end-position] :as state}]
-  #_(print-state state)
+  (print-state state)
+  (Thread/sleep (long (/ 1000 10)))
 
   (let [[current-node new-priority-queue] (pq/pq-pop priority-queue)
         {current-position :position current-depth :depth} current-node ]

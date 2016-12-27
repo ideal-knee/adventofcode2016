@@ -43,7 +43,7 @@
     (cond (and (< l-child-index count) (< r-child-index count))
           (let [l-child-key (first (transient-values l-child-index))
                 r-child-key (first (transient-values r-child-index)) ]
-            (cond (and (< l-child-key r-child-key) (< l-child-key current-key))
+            (cond (and (<= l-child-key r-child-key) (< l-child-key current-key))
                   (recur (pq-swap! transient-values l-child-index current-index) count l-child-index)
 
                   (and (< r-child-key l-child-key) (< r-child-key current-key))
